@@ -1,0 +1,72 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Hans' Game 2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hans' Game 2</h1>
+            <p class="subtitle">A test of foresight with Grandmaster Hans</p>
+        </header>
+
+        <div class="game-rules">
+            <h2>Rules</h2>
+            <ul>
+                <li>There are 21 stones in a pile.</li>
+                <li>On your turn, you may take 1, 2, or 3 stones.</li>
+                <li>The player who takes the last stone WINS.</li>
+                <li>You go first.</li>
+            </ul>
+        </div>
+
+        <div class="game-board">
+            <div class="stone-count">
+                <h3>Stones remaining: <span id="stones-count">21</span></h3>
+            </div>
+            
+            <div id="stones-display" class="stones-display">
+                <!-- Stones will be displayed here -->
+            </div>
+
+            <div id="message" class="message">
+                Your turn! Take 1, 2, or 3 stones.
+            </div>
+
+            <div class="controls">
+                <div class="take-stones">
+                    <button id="take-1" class="stone-btn">Take 1</button>
+                    <button id="take-2" class="stone-btn">Take 2</button>
+                    <button id="take-3" class="stone-btn">Take 3</button>
+                </div>
+                <button id="reset-game" class="reset-btn">Reset Game</button>
+            </div>
+        </div>
+        
+        <div class="wizard-portrait">
+            <div class="wizard-image">
+                <img src="{{ url_for('static', filename='images/hans.png') }}" alt="Hans the Divination Wizard" class="wizard-avatar-img">
+            </div>
+            <div id="wizard-thought" class="wizard-thought">
+                "Let's see how your fate unfolds..."
+            </div>
+        </div>
+
+        <footer>
+            <p>Created for Dungeons & Dragons Campaign</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    <!-- Preload images -->
+    <link rel="preload" href="{{ url_for('static', filename='images/stone.png') }}" as="image">
+    <link rel="preload" href="{{ url_for('static', filename='images/hans.png') }}" as="image">
+</body>
+</html>
