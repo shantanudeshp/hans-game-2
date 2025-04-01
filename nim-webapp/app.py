@@ -25,7 +25,7 @@ def optimal_move(stones):
     if stones % 4 != 0:
         return stones % 4
     else:
-        return 1
+        return random.randint(1,3)
 
 @app.route('/')
 def index():
@@ -74,7 +74,7 @@ def play():
             'stones': stones,
             'game_over': True,
             'winner': 'player',
-            'message': player_message + " You win! Hans looks surprised, then laughs. 'Perhaps there are futures even I cannot foresee.'"
+            'message': player_message + " Hans looks surprised, then laughs. 'Well played.' https://www.linkedin.com/in/shantanu-deshpande-0ab76a1bb/"
         })
     
     # AI's turn
@@ -98,7 +98,7 @@ def play():
         'stones_taken_by_ai': ai_take,
         'game_over': stones == 0,
         'winner': 'ai' if stones == 0 else None,
-        'message': player_message + " " + ai_message + (" 'The threads of fate always reveal their pattern to those who know how to look,' he says." if stones == 0 else "")
+        'message': player_message + " " + ai_message + (" 'As expected.' he says." if stones == 0 else "")
     })
 
 @app.route('/reset', methods=['POST'])

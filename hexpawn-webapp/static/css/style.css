@@ -1,0 +1,303 @@
+/* static/css/style.css */
+:root {
+    --primary-color: #4e2a84;    /* wizard purple */
+    --secondary-color: #8862b2;  /* lighter purple */
+    --accent-color: #f3cc4f;     /* mystical gold */
+    --dark-color: #2a1b47;       /* deep purple */
+    --light-color: #f5f1fa;      /* light purple tint */
+    --board-light: #e8e8e8;      /* light square */
+    --board-dark: #b58863;       /* dark square */
+    --highlight: rgba(243, 204, 79, 0.5); /* highlighted square */
+    --possible-move: rgba(144, 238, 144, 0.5); /* possible move */
+    --success-color: #57a773;    /* green */
+    --danger-color: #e63946;     /* red */
+    --text-color: #333;
+    --bg-color: #f9f6ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    background-image: linear-gradient(to bottom, #f9f6ff, #ede6ff);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.subtitle {
+    color: var(--secondary-color);
+    font-style: italic;
+}
+
+.game-rules {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    border-left: 4px solid var(--accent-color);
+}
+
+.game-rules h2 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.game-rules ul {
+    padding-left: 20px;
+}
+
+.game-rules li {
+    margin-bottom: 8px;
+}
+
+.game-board-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.game-status {
+    margin-bottom: 20px;
+}
+
+.message {
+    padding: 15px;
+    background-color: var(--light-color);
+    border-radius: 5px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.game-board {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    width: 300px;
+    height: 300px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+
+.square {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.square-light {
+    background-color: var(--board-light);
+}
+
+.square-dark {
+    background-color: var(--board-dark);
+}
+
+.square.highlighted {
+    background-color: var(--highlight);
+}
+
+.square.possible-move {
+    background-color: var(--possible-move);
+}
+
+.pawn {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.pawn.player {
+    background-color: white;
+    background-image: url('../images/white-stone.png');
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.pawn.ai {
+    background-color: black;
+    background-image: url('../images/black-stone.png');
+    background-size: cover;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.pawn.selected {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--accent-color);
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.reset-btn {
+    padding: 10px 20px;
+    background-color: var(--accent-color);
+    color: var(--dark-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.reset-btn:hover {
+    background-color: #e6c042;
+}
+
+.wizard-portrait {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.wizard-image {
+    margin-right: 20px;
+}
+
+.wizard-avatar-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    box-shadow: 0 0 10px rgba(78, 42, 132, 0.5);
+}
+
+.wizard-thought {
+    flex: 1;
+    position: relative;
+    background-color: var(--light-color);
+    padding: 15px;
+    border-radius: 10px;
+    font-style: italic;
+    color: var(--primary-color);
+}
+
+.wizard-thought:before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent var(--light-color) transparent transparent;
+}
+
+footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+.success {
+    color: var(--success-color);
+}
+
+.danger {
+    color: var(--danger-color);
+}
+
+/* Animation for pawn movement */
+@keyframes movePawn {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pawn.moving {
+    animation: movePawn 0.5s ease;
+}
+
+@media (max-width: 600px) {
+    .board {
+        width: 240px;
+        height: 240px;
+    }
+    
+    .square {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .pawn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .wizard-portrait {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .wizard-image {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .wizard-thought:before {
+        left: 50%;
+        top: -10px;
+        transform: translateX(-50%);
+        border-width: 0 10px 10px 10px;
+        border-color: transparent transparent var(--light-color) transparent;
+    }
+}
