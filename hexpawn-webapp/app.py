@@ -13,221 +13,188 @@ PLAYER: int = 1  # White (bottom)
 AI: int = 2      # Black (top)
 
 # Initial board setup (3x3 grid)
-# 0 = empty, 1 = player pawn, 2 = AI pawn
+# Row 0: AI pawns (top)
+# Row 1: empty
+# Row 2: Player pawns (bottom)
 INITIAL_BOARD: List[List[int]] = [
-    [2, 2, 2],  # AI pawns at top
-    [0, 0, 0],  # Middle row empty
-    [1, 1, 1]   # Player pawns at bottom
+    [2, 2, 2],
+    [0, 0, 0],
+    [1, 1, 1]
 ]
 
-# Canonical board representation for quick lookup
 def board_to_string(board: List[List[int]]) -> str:
-    """Convert board to string for easy lookup in the perfect play dictionary."""
-    return ''.join([''.join([str(cell) for cell in row]) for row in board])
+    """Convert board to a canonical 9-character string (row-by-row)."""
+    return ''.join(''.join(str(cell) for cell in row) for row in board)
 
-# Complete opening book for perfect hexapawn play
-# Maps board state to optimal move: (from_row, from_col), (to_row, to_col)
-PERFECT_MOVES: Dict[str, Tuple[Tuple[int, int], Tuple[int, int]]] = {
-    # Initial responses after white's first move
-    '220010101': ((0, 1), (1, 1)),  # White moved left pawn, Black responds with center pawn forward
-    '202010101': ((0, 1), (1, 1)),  # White moved right pawn, Black responds with center pawn forward
-    '221000101': ((0, 0), (1, 0)),  # White moved center pawn, Black responds with left pawn forward
-    
-    # Responses after 2nd white move, when center Black pawn is at (1,1)
-    '020210101': ((1, 1), (2, 0)),  # Capture left white pawn
-    '020201101': ((1, 1), (2, 2)),  # Capture right white pawn
-    '020010201': ((1, 1), (2, 0)),  # Capture left white pawn
-    '020010021': ((1, 1), (2, 2)),  # Capture right white pawn
-    
-    # Responses after white's 2nd move, when left Black pawn is at (1,0)
-    '200210101': ((1, 0), (2, 1)),  # Capture center white pawn
-    '200201101': ((0, 2), (1, 2)),  # Move right pawn forward
-    '200010201': ((0, 2), (1, 2)),  # Move right pawn forward
-    '200010021': ((1, 0), (2, 1)),  # Capture center white pawn
-    
-    # Common middle game positions
-    '002200101': ((0, 2), (1, 1)),  # Block center
-    '020200101': ((0, 2), (1, 1)),  # Block center
-    '020002101': ((0, 0), (1, 1)),  # Block center
-    '200020101': ((0, 2), (1, 1)),  # Block center
-    '200002101': ((0, 0), (1, 1)),  # Block center
-    
-    # Additional positions after exchanges
-    '020010001': ((1, 1), (2, 1)),  # Go for win by reaching bottom
-    '000210001': ((0, 2), (1, 2)),  # Advanced position
-    '000010201': ((0, 0), (1, 0)),  # Advanced position
-    '200010001': ((1, 0), (2, 0)),  # Go for win by reaching bottom
-    '002010001': ((1, 2), (2, 2)),  # Go for win by reaching bottom
-    
-    # Late game positions 
-    '000200001': ((0, 1), (1, 1)),  # Progress toward victory
-    '000020001': ((0, 1), (1, 1)),  # Progress toward victory
-    '000002001': ((0, 0), (1, 0)),  # Progress toward victory
-    '000000201': ((0, 2), (1, 2)),  # Progress toward victory
-}
-
-def is_valid_move(board: List[List[int]], from_pos: Tuple[int, int], to_pos: Tuple[int, int], current_player: int) -> bool:
-    """Check if move is valid."""
+def is_valid_move(board: List[List[int]], from_pos: Tuple[int, int],
+                  to_pos: Tuple[int, int], current_player: int) -> bool:
+    """Return True if the move is valid for current_player."""
     from_row, from_col = from_pos
     to_row, to_col = to_pos
-    
-    # Check if positions are in bounds
     if not (0 <= from_row < 3 and 0 <= from_col < 3 and 0 <= to_row < 3 and 0 <= to_col < 3):
         return False
-    
-    # Check if from_pos contains the current player's pawn
     if board[from_row][from_col] != current_player:
         return False
-    
-    # Check if to_pos is empty or contains an opponent (for diagonal capture)
-    if to_pos == (from_row, from_col):
+    if (from_row, from_col) == (to_row, to_col):
         return False
-    
-    # Movement direction (player moves up, AI moves down)
+    # Movement direction: White moves upward (-1), Black moves downward (+1)
     direction: int = -1 if current_player == PLAYER else 1
-    
-    # Straight move must go into an empty square
     if to_col == from_col:
         return to_row == from_row + direction and board[to_row][to_col] == EMPTY
-    # Diagonal capture: move one row forward and one column left/right; must capture opponent pawn
     elif abs(to_col - from_col) == 1:
+        # Diagonal move must capture opponent pawn.
         return to_row == from_row + direction and board[to_row][to_col] not in [EMPTY, current_player]
-    
     return False
 
 def get_all_valid_moves(board: List[List[int]], current_player: int) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
-    """Get all valid moves for the current player."""
+    """Return a list of all valid moves for current_player."""
     moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = []
-    
     for row in range(3):
         for col in range(3):
             if board[row][col] == current_player:
-                # Direction of movement
-                direction = -1 if current_player == PLAYER else 1
-                
-                # Forward move
-                new_row = row + direction
+                direction: int = -1 if current_player == PLAYER else 1
+                new_row: int = row + direction
                 if 0 <= new_row < 3 and board[new_row][col] == EMPTY:
                     moves.append(((row, col), (new_row, col)))
-                
-                # Diagonal captures
                 for dc in [-1, 1]:
-                    new_col = col + dc
+                    new_col: int = col + dc
                     if 0 <= new_row < 3 and 0 <= new_col < 3:
                         if board[new_row][new_col] not in [EMPTY, current_player]:
                             moves.append(((row, col), (new_row, new_col)))
-    
     return moves
 
-def make_move(board: List[List[int]], from_pos: Tuple[int, int], to_pos: Tuple[int, int]) -> List[List[int]]:
-    """Make a move on the board and return the new board state."""
+def make_move(board: List[List[int]], from_pos: Tuple[int, int],
+              to_pos: Tuple[int, int]) -> List[List[int]]:
+    """Return a new board state after making the given move."""
     new_board: List[List[int]] = copy.deepcopy(board)
     from_row, from_col = from_pos
     to_row, to_col = to_pos
-    
-    # Move the pawn
     new_board[to_row][to_col] = new_board[from_row][from_col]
     new_board[from_row][from_col] = EMPTY
-    
     return new_board
 
 def check_win(board: List[List[int]], current_player: int) -> bool:
     """
-    Check if the current player has won.
-    In Hexapawn, a player wins by:
-    1. Reaching the opponent's back row
-    2. Capturing all opponent pawns
-    3. Creating a position where the opponent has no legal moves
+    Return True if current_player has won.
+    Winning conditions:
+      1. A pawn reaches the opponent's back row.
+      2. The opponent has no pawns.
+      3. The opponent has no legal moves.
     """
     opponent: int = PLAYER if current_player == AI else AI
-    
-    # 1. Check if player reached opponent's back row
-    target_row = 0 if current_player == PLAYER else 2
+    # Condition 1: Reaching the opponent's back row.
+    target_row: int = 0 if current_player == PLAYER else 2
     for col in range(3):
         if board[target_row][col] == current_player:
             return True
-    
-    # 2. Check if opponent has no pawns left
+    # Condition 2: Opponent has no pawns.
     opponent_pawns: int = sum(row.count(opponent) for row in board)
     if opponent_pawns == 0:
         return True
-        
-    # 3. Check if opponent has no valid moves
+    # Condition 3: Opponent has no legal moves.
     if not get_all_valid_moves(board, opponent):
         return True
-    
     return False
+
+# --- Retrograde Analysis (Negamax) to compute perfect moves ---
+# We use a negamax search with memoization. The outcome is defined from the
+# perspective of the player whose turn it is: +1 means a forced win, -1 a forced loss.
+# (There are no draws in hexapawn with optimal play.)
+
+# Memoization dictionary: key is (board_string, turn) and value is (value, best_move)
+MemoType = Dict[Tuple[str, int], Tuple[int, Optional[Tuple[Tuple[int, int], Tuple[int, int]]]]]
+
+def negamax(board: List[List[int]], turn: int, memo: MemoType) -> Tuple[int, Optional[Tuple[Tuple[int, int], Tuple[int, int]]]]:
+    state = (board_to_string(board), turn)
+    if state in memo:
+        return memo[state]
+    
+    # Terminal conditions: if the board is already winning for someone.
+    if check_win(board, PLAYER) or check_win(board, AI):
+        # If the current board is terminal, then the previous move won.
+        # So the outcome for the player whose turn it is is a loss.
+        outcome: int = -1
+        memo[state] = (outcome, None)
+        return (outcome, None)
+    
+    moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = get_all_valid_moves(board, turn)
+    if not moves:
+        # No moves: lose immediately.
+        memo[state] = (-1, None)
+        return (-1, None)
+    
+    best_value: int = -1000
+    best_move: Optional[Tuple[Tuple[int, int], Tuple[int, int]]] = None
+    for move in moves:
+        new_board: List[List[int]] = make_move(board, move[0], move[1])
+        # Switch turn: if turn was AI, opponent becomes PLAYER, and vice versa.
+        opponent: int = PLAYER if turn == AI else AI
+        value, _ = negamax(new_board, opponent, memo)
+        value = -value  # Negamax: value is the negative of opponent's value.
+        if value > best_value:
+            best_value = value
+            best_move = move
+        # If a winning move is found, no need to search further.
+        if best_value == 1:
+            break
+    memo[state] = (best_value, best_move)
+    return memo[state]
+
+# Now we traverse the entire game tree (starting from the initial board with white to move)
+# and record the perfect move for every board state where it’s Black’s turn.
+COMPLETE_PERFECT_MOVES: Dict[str, Tuple[Tuple[int, int], Tuple[int, int]]] = {}
+
+def traverse(board: List[List[int]], turn: int, visited: Set[Tuple[str, int]], memo: MemoType) -> None:
+    state = (board_to_string(board), turn)
+    if state in visited:
+        return
+    visited.add(state)
+    
+    # If it is Black’s turn, record the best move (if one exists)
+    if turn == AI:
+        value, best_move = negamax(board, turn, memo)
+        if best_move is not None:
+            COMPLETE_PERFECT_MOVES[board_to_string(board)] = best_move
+    
+    # Recurse over all possible moves for the current player.
+    for move in get_all_valid_moves(board, turn):
+        new_board: List[List[int]] = make_move(board, move[0], move[1])
+        opponent: int = PLAYER if turn == AI else AI
+        traverse(new_board, opponent, visited, memo)
+
+# Compute the complete dictionary at startup.
+memo: MemoType = {}
+visited_states: Set[Tuple[str, int]] = set()
+# White moves first from the initial board.
+traverse(INITIAL_BOARD, PLAYER, visited_states, memo)
+
+# --- End Retrograde Analysis ---
+
+def debug_board_to_move(board: List[List[int]]) -> None:
+    """Print the board state and (if available) the lookup move."""
+    board_str: str = board_to_string(board)
+    print("Current Board State:")
+    for row in board:
+        print(row)
+    print("String representation:", board_str)
+    if board_str in COMPLETE_PERFECT_MOVES:
+        print("Found in COMPLETE_PERFECT_MOVES:", COMPLETE_PERFECT_MOVES[board_str])
+    else:
+        print("State not in COMPLETE_PERFECT_MOVES.")
 
 def get_best_move(board: List[List[int]]) -> Tuple[Tuple[int, int], Tuple[int, int]]:
     """
-    Get the perfect move for Black (AI/Hans) using a complete lookup table of optimal moves.
-    
-    For any position not in the lookup table, use a prioritized strategy:
-    1. Immediate win moves
-    2. Capture moves (especially center)
-    3. Center control
-    4. Advanced pawns
+    Return Black's perfect move for the current board by looking it up in the complete dictionary.
+    If the board state is not found, return the first valid move.
     """
-    # Get the canonical string representation of the board
-    board_str = board_to_string(board)
-    
-    # 1. Check if the position is in our perfect play database
-    if board_str in PERFECT_MOVES:
-        return PERFECT_MOVES[board_str]
-    
-    valid_moves = get_all_valid_moves(board, AI)
-    
-    # If only one move is available, return it
-    if len(valid_moves) == 1:
+    board_str: str = board_to_string(board)
+    debug_board_to_move(board)
+    if board_str in COMPLETE_PERFECT_MOVES:
+        return COMPLETE_PERFECT_MOVES[board_str]
+    valid_moves: List[Tuple[Tuple[int, int], Tuple[int, int]]] = get_all_valid_moves(board, AI)
+    if valid_moves:
         return valid_moves[0]
-    
-    # 2. Check for immediate win moves
-    for from_pos, to_pos in valid_moves:
-        new_board = make_move(board, from_pos, to_pos)
-        if check_win(new_board, AI):
-            return (from_pos, to_pos)
-    
-    # 3. Prioritize captures
-    capture_moves = []
-    for from_pos, to_pos in valid_moves:
-        if abs(from_pos[1] - to_pos[1]) == 1:  # Diagonal move = capture
-            capture_moves.append((from_pos, to_pos))
-    
-    if capture_moves:
-        # Center captures get highest priority
-        for from_pos, to_pos in capture_moves:
-            if to_pos[1] == 1:  # Center column
-                return (from_pos, to_pos)
-        return capture_moves[0]
-    
-    # 4. Prioritize center control and advancement
-    scored_moves = []
-    for from_pos, to_pos in valid_moves:
-        score = 0
-        
-        # Prefer center column
-        if to_pos[1] == 1:
-            score += 3
-        
-        # Advancement score
-        score += to_pos[0] * 2
-        
-        # Prefer moves that enable future captures
-        if to_pos[0] < 2:  # Not on the bottom row yet
-            for dc in [-1, 1]:
-                next_col = to_pos[1] + dc
-                if 0 <= next_col < 3 and to_pos[0] + 1 < 3:
-                    if board[to_pos[0] + 1][next_col] == PLAYER:
-                        score += 2
-        
-        scored_moves.append((score, (from_pos, to_pos)))
-    
-    # Return the move with the highest score
-    if scored_moves:
-        return max(scored_moves, key=lambda x: x[0])[1]
-    
-    # Fallback: just return the first valid move (shouldn't happen with proper scoring)
-    return valid_moves[0]
+    raise Exception("No valid moves available for AI.")
 
 @app.route('/')
 def index() -> Any:
@@ -239,7 +206,7 @@ def index() -> Any:
 
 @app.route('/get_game_state', methods=['GET'])
 def get_game_state() -> Any:
-    """Get the current game state."""
+    """Return the current game state."""
     return jsonify({
         'board': session.get('board', INITIAL_BOARD),
         'game_over': session.get('game_over', False),
@@ -248,7 +215,7 @@ def get_game_state() -> Any:
 
 @app.route('/move', methods=['POST'])
 def move() -> Any:
-    """Handle player moves and AI responses with perfect play."""
+    """Process the player's move and respond with Black's perfect move."""
     data: Any = request.get_json()
     from_pos: Tuple[int, int] = tuple(data.get('from_pos'))
     to_pos: Tuple[int, int] = tuple(data.get('to_pos'))
@@ -264,17 +231,14 @@ def move() -> Any:
             'message': 'Game is already over!'
         })
     
-    # Validate player move
     if not is_valid_move(board, from_pos, to_pos, PLAYER):
         return jsonify({
             'error': 'Invalid move!',
             'board': board
         })
     
-    # Process player move
+    # Process Player's move.
     board = make_move(board, from_pos, to_pos)
-    
-    # Check if player won (should not happen with perfect AI play, but we'll check)
     if check_win(board, PLAYER):
         session['game_over'] = True
         session['winner'] = 'player'
@@ -286,9 +250,9 @@ def move() -> Any:
             'message': "You win! Hans looks shocked. 'Impossible! My divination has never failed before...'"
         })
     
-    # Get AI moves
-    ai_moves = get_all_valid_moves(board, AI)
-    if not ai_moves:
+    # Black's turn.
+    valid_moves = get_all_valid_moves(board, AI)
+    if not valid_moves:
         session['game_over'] = True
         session['winner'] = 'draw'
         session['board'] = board
@@ -299,32 +263,15 @@ def move() -> Any:
             'message': "It's a draw! 'A stalemate... reality itself seems distorted,' Hans whispers."
         })
     
-    # AI's turn - get the perfect move
     ai_from_pos, ai_to_pos = get_best_move(board)
+    print(f"Board: {board_to_string(board)}, AI Move: From {ai_from_pos} to {ai_to_pos}")
     
-    # Log the move for debugging
-    board_str = board_to_string(board)
-    print(f"Board: {board_str}, AI Move: From {ai_from_pos} to {ai_to_pos}")
-    
-    # Make the move
     board = make_move(board, ai_from_pos, ai_to_pos)
-    
-    # AI response based on game state
-    player_pawns = sum(row.count(PLAYER) for row in board)
-    
-    if check_win(board, AI):
-        ai_message = "'The threads of fate always reveal their pattern to those who know how to look,' Hans says triumphantly."
-    elif player_pawns <= 1:
-        ai_message = "'Your position crumbles as I foresaw,' Hans says with confidence."
-    else:
-        ai_message = "'Every move brings you closer to the inevitable,' Hans states calmly."
-    
-    # Check if AI won
     if check_win(board, AI):
         session['game_over'] = True
         session['winner'] = 'ai'
         session['board'] = board
-        
+        ai_message: str = "'The threads of fate always reveal their pattern to those who know how to look,' he says triumphantly."
         return jsonify({
             'board': board,
             'game_over': True,
@@ -334,14 +281,11 @@ def move() -> Any:
             'message': ai_message
         })
     
-    # Check if player has no moves (AI wins)
-    player_moves = get_all_valid_moves(board, PLAYER)
-    if not player_moves:
+    if not get_all_valid_moves(board, PLAYER):
         session['game_over'] = True
         session['winner'] = 'ai'
         session['board'] = board
-        ai_win_message = "'With no moves left, you must concede. Your defeat was inevitable,' Hans says triumphantly."
-        
+        ai_win_message: str = "'With no moves left, you must concede. Your defeat was inevitable,' Hans says triumphantly."
         return jsonify({
             'board': board,
             'game_over': True,
@@ -351,9 +295,8 @@ def move() -> Any:
             'message': ai_win_message
         })
     
-    # Update session for continuing game
     session['board'] = board
-    
+    ai_message: str = "'Every move brings you closer to the inevitable,' Hans states calmly."
     return jsonify({
         'board': board,
         'game_over': False,
@@ -365,11 +308,10 @@ def move() -> Any:
 
 @app.route('/reset', methods=['POST'])
 def reset() -> Any:
-    """Reset the game."""
+    """Reset the game state."""
     session['board'] = INITIAL_BOARD
     session['game_over'] = False
     session['winner'] = None
-    
     return jsonify({
         'board': INITIAL_BOARD,
         'game_over': False,

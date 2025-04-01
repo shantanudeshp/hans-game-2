@@ -74,7 +74,7 @@ def play():
             'stones': stones,
             'game_over': True,
             'winner': 'player',
-            'message': player_message + " Hans looks surprised, then laughs. 'Well played.' https://www.linkedin.com/in/shantanu-deshpande-0ab76a1bb/"
+            'message': player_message + " Hans looks surprised, then laughs. 'Well played.'"
         })
     
     # AI's turn
