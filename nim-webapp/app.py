@@ -74,7 +74,7 @@ def play():
             'stones': stones,
             'game_over': True,
             'winner': 'player',
-            'message': player_message + " Hans looks surprised, then laughs. 'Well played.'"
+            'message': player_message + " Hans looks surprised, then laughs. 'Well played.'\nDouble or nothing? https://hans-game-2-2.onrender.com/"
         })
     
     # AI's turn
