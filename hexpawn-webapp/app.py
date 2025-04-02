@@ -271,7 +271,7 @@ def move() -> Any:
         session['game_over'] = True
         session['winner'] = 'ai'
         session['board'] = board
-        ai_message: str = "'The threads of fate always reveal their pattern to those who know how to look,' he says triumphantly."
+        ai_message: str = "Hans never loses... https://i.imgur.com/tV1rKks.jpeg"
         return jsonify({
             'board': board,
             'game_over': True,
